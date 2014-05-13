@@ -6,9 +6,6 @@ class AuthenticationsController < ApplicationController
       link_to_youtube and return
     end
 
-    omniauth = request.env['omniauth.auth']
-    authentication = Authentication.find_by_provider_and_uid(omniauth['provider'], omniauth['uid'])
-
     @path = request.env['omniauth.origin'] || root_path
 
     if authentication.present?
@@ -24,6 +21,14 @@ class AuthenticationsController < ApplicationController
     if current_user && omniauth['provider']=='github' && current_user.github_profile_url.blank?
       link_github_profile
     end
+  end
+
+  def authentication 
+    @authentication ||= Authentication.find_by_provider_and_uid(omniauth['provider'], omniauth['uid'])
+  end
+
+  def omniauth 
+    @omniauth ||= request.env['omniauth.auth']
   end
 
   def failure
