@@ -9,12 +9,20 @@ class AuthenticationsController < ApplicationController
     @path = request.env['omniauth.origin'] || root_path
 
     if authentication.present?
-      attempt_login_with_auth(authentication, @path)
+    AttemptLoginWithAuthService.new(current_user, authentication, @path).call(
+      success: ->(path) do 
+        flash[:notice] = 'Signed in successfully.'
+        sign_in_and_redirect(:user, authentication.user)
+      end, 
+      failure: ->(path) do 
+        flash[:alert] = 'Another account is already associated with these credentials!'
+        redirect_to path
+      end)
 
     elsif current_user
       create_new_authentication_for_current_user(omniauth, @path)
 
-    else
+    elsif !current_user
       create_new_user_with_authentication(omniauth)
     end
 
@@ -99,13 +107,6 @@ class AuthenticationsController < ApplicationController
   end
 
   def attempt_login_with_auth(authentication, path)
-    if current_user.present? and authentication.user != current_user
-      flash[:alert] = 'Another account is already associated with these credentials!'
-      redirect_to path
-    else
-      flash[:notice] = 'Signed in successfully.'
-      sign_in_and_redirect(:user, authentication.user)
-    end
   end
 
   def create_new_authentication_for_current_user(omniauth, path)
