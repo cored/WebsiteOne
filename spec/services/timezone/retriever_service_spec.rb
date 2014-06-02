@@ -1,4 +1,4 @@
-require_relative '../../app/services/timezone_retriever_service'
+require_relative '../../../app/services/timezone/retriever_service'
 require 'active_support/all'
 
 Geocoder.configure(:ip_lookup => :test)
@@ -19,7 +19,8 @@ Geocoder::Lookup::Test.add_stub(
     }.as_json
 ]
 )
-describe TimezoneRetrieverService do
+
+describe Timezone::RetrieverService do
   let(:user) { double(:user,  last_sign_in_ip: '127.0.0.1') }
 
   context '.for' do
